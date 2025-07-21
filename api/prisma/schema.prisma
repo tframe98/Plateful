@@ -1,0 +1,272 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  MANAGER
+  EMPLOYEE
+  CHEF
+  SERVER
+  HOST
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+enum ShiftStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ScheduleRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ReservationStatus {
+  CONFIRMED
+  SEATED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+enum LoyaltyTierLevel {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+model Restaurant {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  phone       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  users       User[]   @relation("RestaurantUsers")
+  ownerId     String
+  owner       User     @relation("RestaurantOwner", fields: [ownerId], references: [id])
+
+  @@map("restaurants")
+}
+
+model User {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  password          String
+  firstName         String
+  lastName          String
+  role              UserRole @default(EMPLOYEE)
+  phone             String?
+  address           String?
+  hireDate          DateTime @default(now())
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  orders            Order[]
+  shifts            Shift[]
+  scheduleRequests  ScheduleRequest[]
+  reservations      Reservation[]
+  analyticsSnapshots AnalyticsSnapshot[]
+  restaurantId      String?
+  restaurant        Restaurant? @relation("RestaurantUsers", fields: [restaurantId], references: [id])
+  ownedRestaurants  Restaurant[] @relation("RestaurantOwner")
+
+  @@map("users")
+}
+
+model MenuItem {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Decimal
+  category    String
+  isAvailable Boolean  @default(true)
+  imageUrl    String?
+  allergens   Json?    // Changed from String[] to Json for SQLite compatibility
+  nutrition   Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  orderItems  OrderItem[]
+
+  @@map("menu_items")
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  customerName    String
+  customerPhone   String?
+  customerEmail   String?
+  status          OrderStatus @default(PENDING)
+  totalAmount     Decimal
+  taxAmount       Decimal
+  tipAmount       Decimal?
+  deliveryAddress String?
+  deliveryFee     Decimal?
+  notes           String?
+  source          String? // "POS", "UberEats", "DoorDash", etc.
+  externalOrderId String? // For third-party integrations
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  userId          String?
+  user            User?       @relation(fields: [userId], references: [id])
+  orderItems      OrderItem[]
+  reservations    Reservation[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  quantity   Int
+  unitPrice  Decimal
+  totalPrice Decimal
+  notes      String?
+  createdAt  DateTime @default(now())
+
+  // Relations
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@map("order_items")
+}
+
+model Shift {
+  id          String      @id @default(cuid())
+  startTime   DateTime
+  endTime     DateTime
+  status      ShiftStatus @default(SCHEDULED)
+  notes       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relations
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("shifts")
+}
+
+model ScheduleRequest {
+  id          String                @id @default(cuid())
+  startTime   DateTime
+  endTime     DateTime
+  reason      String?
+  status      ScheduleRequestStatus @default(PENDING)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  // Relations
+  userId      String
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("schedule_requests")
+}
+
+model Reservation {
+  id              String            @id @default(cuid())
+  customerName    String
+  customerPhone   String
+  customerEmail   String?
+  partySize       Int
+  reservationTime DateTime
+  status          ReservationStatus @default(CONFIRMED)
+  specialRequests String?
+  tableNumber     String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  orderId         String?
+  order           Order?            @relation(fields: [orderId], references: [id])
+  userId          String?
+  user            User?             @relation(fields: [userId], references: [id])
+
+  @@map("reservations")
+}
+
+model Campaign {
+  id          String         @id @default(cuid())
+  name        String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  status      CampaignStatus @default(DRAFT)
+  discountType String        // "PERCENTAGE", "FIXED_AMOUNT"
+  discountValue Decimal
+  minimumOrder Decimal?
+  targetAudience String?     // "ALL", "LOYALTY_MEMBERS", "NEW_CUSTOMERS"
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@map("campaigns")
+}
+
+model LoyaltyTier {
+  id          String           @id @default(cuid())
+  name        String
+  level       LoyaltyTierLevel
+  pointsRequired Int
+  benefits    Json?
+  discountPercentage Decimal?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("loyalty_tiers")
+}
+
+model AnalyticsSnapshot {
+  id                String   @id @default(cuid())
+  date              DateTime
+  totalOrders       Int
+  totalRevenue      Decimal
+  averageOrderValue Decimal
+  topSellingItems   Json
+  customerCount     Int
+  employeeCount     Int
+  peakHours         Json
+  createdAt         DateTime @default(now())
+
+  // Relations
+  userId            String?
+  user              User?    @relation(fields: [userId], references: [id])
+
+  @@map("analytics_snapshots")
+}
