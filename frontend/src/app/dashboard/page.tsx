@@ -725,12 +725,16 @@ function DashboardContent() {
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue Trend (Last 30 Days)</h3>
               <div className="h-64 overflow-x-auto">
-                <div className="flex items-end space-x-2 min-w-max">
-                  {analytics.map((day, i) => (
-                    <div key={i} className="flex-1 bg-primary-200 rounded-t min-w-[20px]" style={{ height: `${(day.revenue / 2800) * 100}%` }}>
-                      <div className="text-xs text-center mt-2 text-gray-600">${day.revenue}</div>
-                    </div>
-                  ))}
+                <div className="flex items-end space-x-2 min-w-max h-full">
+                  {analytics.map((day, i) => {
+                    const maxRevenue = Math.max(...analytics.map(d => d.revenue))
+                    const heightPercentage = (day.revenue / maxRevenue) * 80 // Use 80% of available height
+                    return (
+                      <div key={i} className="flex-1 bg-primary-200 rounded-t min-w-[20px] relative" style={{ height: `${heightPercentage}%` }}>
+                        <div className="text-xs text-center absolute -top-6 left-1/2 transform -translate-x-1/2 text-gray-600">${day.revenue}</div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </div>
@@ -739,12 +743,16 @@ function DashboardContent() {
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Orders Trend (Last 30 Days)</h3>
               <div className="h-64 overflow-x-auto">
-                <div className="flex items-end space-x-2 min-w-max">
-                  {analytics.map((day, i) => (
-                    <div key={i} className="flex-1 bg-green-200 rounded-t min-w-[20px]" style={{ height: `${(day.orders / 70) * 100}%` }}>
-                      <div className="text-xs text-center mt-2 text-gray-600">{day.orders}</div>
-                    </div>
-                  ))}
+                <div className="flex items-end space-x-2 min-w-max h-full">
+                  {analytics.map((day, i) => {
+                    const maxOrders = Math.max(...analytics.map(d => d.orders))
+                    const heightPercentage = (day.orders / maxOrders) * 80 // Use 80% of available height
+                    return (
+                      <div key={i} className="flex-1 bg-green-200 rounded-t min-w-[20px] relative" style={{ height: `${heightPercentage}%` }}>
+                        <div className="text-xs text-center absolute -top-6 left-1/2 transform -translate-x-1/2 text-gray-600">{day.orders}</div>
+                      </div>
+                    )
+                  })}
                 </div>
               </div>
             </div>
