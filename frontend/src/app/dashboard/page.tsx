@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { 
   ShoppingCart, 
   Calendar, 
@@ -11,11 +12,22 @@ import {
   Clock,
   TrendingUp,
   DollarSign,
-  ArrowLeft
+  ArrowLeft,
+  Settings,
+  UserCheck
 } from 'lucide-react'
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview')
+  const [userRole, setUserRole] = useState('employee')
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const role = searchParams.get('role') || 'employee'
+    setUserRole(role)
+  }, [searchParams])
+
+  const isManager = userRole === 'manager'
 
   const stats = [
     {
@@ -48,7 +60,7 @@ export default function DashboardPage() {
     },
   ]
 
-  const quickActions = [
+  const quickActions = isManager ? [
     {
       name: 'New Order',
       href: '/dashboard/orders',
@@ -73,15 +85,39 @@ export default function DashboardPage() {
       icon: BarChart3,
       description: 'View performance metrics',
     },
+  ] : [
+    {
+      name: 'View Orders',
+      href: '/dashboard/orders',
+      icon: ShoppingCart,
+      description: 'View assigned orders',
+    },
+    {
+      name: 'My Schedule',
+      href: '/dashboard/schedule',
+      icon: Calendar,
+      description: 'View my work schedule',
+    },
+    {
+      name: 'Team',
+      href: '/dashboard/team',
+      icon: Users,
+      description: 'View team members',
+    },
   ]
 
-  const navigation = [
+  const navigation = isManager ? [
     { name: 'Overview', id: 'overview', icon: BarChart3 },
     { name: 'Orders', id: 'orders', icon: ShoppingCart },
     { name: 'Menu', id: 'menu', icon: Menu },
     { name: 'Schedule', id: 'schedule', icon: Calendar },
     { name: 'Team', id: 'team', icon: Users },
     { name: 'Analytics', id: 'analytics', icon: TrendingUp },
+  ] : [
+    { name: 'Overview', id: 'overview', icon: BarChart3 },
+    { name: 'Orders', id: 'orders', icon: ShoppingCart },
+    { name: 'Schedule', id: 'schedule', icon: Calendar },
+    { name: 'Team', id: 'team', icon: Users },
   ]
 
   return (
@@ -98,6 +134,10 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center">
               <h1 className="text-xl font-semibold text-gray-900">Plateful Dashboard</h1>
+              <div className="ml-4 flex items-center">
+                <UserCheck className="h-4 w-4 text-gray-400 mr-1" />
+                <span className="text-sm text-gray-600 capitalize">{userRole}</span>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">Demo Mode</span>
@@ -130,6 +170,19 @@ export default function DashboardPage() {
         {/* Content based on active tab */}
         {activeTab === 'overview' && (
           <div className="space-y-8">
+            {/* Welcome Message */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">
+                Welcome back, {isManager ? 'Manager' : 'Team Member'}!
+              </h2>
+              <p className="text-gray-600">
+                {isManager 
+                  ? 'Here\'s an overview of your restaurant\'s performance today.'
+                  : 'Here\'s what you need to know for your shift today.'
+                }
+              </p>
+            </div>
+
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {stats.map((stat) => (
@@ -244,12 +297,17 @@ export default function DashboardPage() {
               <h2 className="text-lg font-semibold text-gray-900">Orders</h2>
             </div>
             <div className="p-6">
-              <p className="text-gray-600">Order management interface would go here.</p>
+              <p className="text-gray-600">
+                {isManager 
+                  ? 'Order management interface for managers would go here.'
+                  : 'View your assigned orders here.'
+                }
+              </p>
             </div>
           </div>
         )}
 
-        {activeTab === 'menu' && (
+        {activeTab === 'menu' && isManager && (
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900">Menu Management</h2>
@@ -263,10 +321,17 @@ export default function DashboardPage() {
         {activeTab === 'schedule' && (
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Staff Schedule</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {isManager ? 'Staff Schedule' : 'My Schedule'}
+              </h2>
             </div>
             <div className="p-6">
-              <p className="text-gray-600">Staff scheduling interface would go here.</p>
+              <p className="text-gray-600">
+                {isManager 
+                  ? 'Staff scheduling interface would go here.'
+                  : 'View your personal work schedule here.'
+                }
+              </p>
             </div>
           </div>
         )}
@@ -274,15 +339,22 @@ export default function DashboardPage() {
         {activeTab === 'team' && (
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">Team Management</h2>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {isManager ? 'Team Management' : 'Team Members'}
+              </h2>
             </div>
             <div className="p-6">
-              <p className="text-gray-600">Team management interface would go here.</p>
+              <p className="text-gray-600">
+                {isManager 
+                  ? 'Team management interface would go here.'
+                  : 'View your team members here.'
+                }
+              </p>
             </div>
           </div>
         )}
 
-        {activeTab === 'analytics' && (
+        {activeTab === 'analytics' && isManager && (
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900">Analytics</h2>

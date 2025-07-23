@@ -7,12 +7,21 @@ import { useRouter } from 'next/navigation'
 export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
   const router = useRouter()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // For demo purposes, redirect to dashboard
-    router.push('/dashboard')
+    setError('')
+    
+    // Demo manager account
+    if (email === 'manager@demo.com' && password === 'demo123') {
+      router.push('/dashboard?role=manager')
+    } else if (email === 'employee@demo.com' && password === 'demo123') {
+      router.push('/dashboard?role=employee')
+    } else {
+      setError('Invalid credentials. Try manager@demo.com / demo123 or employee@demo.com / demo123')
+    }
   }
 
   return (
@@ -48,6 +57,11 @@ export default function SignInPage() {
                 required
               />
             </div>
+            {error && (
+              <div className="text-red-600 text-sm bg-red-50 p-3 rounded">
+                {error}
+              </div>
+            )}
             <button 
               type="submit"
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
@@ -55,6 +69,16 @@ export default function SignInPage() {
               Sign In
             </button>
           </form>
+          
+          {/* Demo Accounts Info */}
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+            <h3 className="text-sm font-medium text-blue-900 mb-2">Demo Accounts:</h3>
+            <div className="text-xs text-blue-700 space-y-1">
+              <p><strong>Manager:</strong> manager@demo.com / demo123</p>
+              <p><strong>Employee:</strong> employee@demo.com / demo123</p>
+            </div>
+          </div>
+          
           <div className="mt-6 text-center">
             <Link href="/" className="text-primary-600 hover:text-primary-500">
               Back to Home
