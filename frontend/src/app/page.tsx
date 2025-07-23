@@ -89,7 +89,7 @@ export default function Home() {
               <a href="#features" className="text-surface-600 hover:text-surface-900">Features</a>
               <a href="#pricing" className="text-surface-600 hover:text-surface-900">Pricing</a>
               <a href="#contact" className="text-surface-600 hover:text-surface-900">Contact</a>
-              <Link href="/login" className="btn-primary">
+              <Link href="/sign-in" className="btn-primary">
                 Sign In
               </Link>
               <Link href="/sign-up" className="btn-secondary">
