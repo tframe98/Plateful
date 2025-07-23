@@ -117,7 +117,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/sign-up" className="btn-primary text-lg px-8 py-3">
                 Get Started Free
-                <ArrowRight className="ml-2 h-5 w-5" />
+                
               </Link>
               <Link href="#features" className="btn-secondary text-lg px-8 py-3">
                 Learn More
@@ -195,7 +195,7 @@ export default function Home() {
           </p>
           <Link href="/sign-up" className="btn-secondary text-lg px-8 py-3 bg-white text-primary-600 hover:bg-surface-100">
             Start Your Free Trial
-            <ArrowRight className="ml-2 h-5 w-5" />
+            
           </Link>
         </div>
       </div>
