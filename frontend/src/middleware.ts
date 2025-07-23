@@ -1,6 +1,12 @@
 import { clerkMiddleware } from '@clerk/nextjs/server';
 
-export default clerkMiddleware();
+// Temporarily disable middleware to test routing
+export default function middleware() {
+  // Do nothing for now
+  return;
+}
+
+// export default clerkMiddleware();
 
 export const config = {
   matcher: [
