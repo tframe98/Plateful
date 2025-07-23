@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { 
   Utensils, 
@@ -19,6 +19,11 @@ import {
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  useEffect(() => {
+    console.log('Landing page loaded!')
+    // alert('Landing page loaded!')
+  }, [])
 
   const features = [
     {
@@ -76,6 +81,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-surface-50">
+      <div className="text-center py-20">
+        <h1 className="text-4xl font-bold text-red-600">LANDING PAGE IS WORKING!</h1>
+        <p className="text-xl mt-4">If you can see this, the routing is working!</p>
+      </div>
+      
       {/* Navigation */}
       <nav className="bg-white shadow-sm border-b border-surface-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
