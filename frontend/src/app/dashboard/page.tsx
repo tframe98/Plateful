@@ -121,7 +121,22 @@ function DashboardContent() {
   const [analytics, setAnalytics] = useState(generateAnalytics())
   const [searchTerm, setSearchTerm] = useState('')
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showAddShiftModal, setShowAddShiftModal] = useState(false)
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false)
   const [newItem, setNewItem] = useState({ name: '', price: '', category: 'Appetizers' })
+  const [newShift, setNewShift] = useState({ 
+    employee: '', 
+    role: 'Server', 
+    date: '', 
+    startTime: '', 
+    endTime: '' 
+  })
+  const [newMember, setNewMember] = useState({ 
+    name: '', 
+    email: '', 
+    role: 'Server', 
+    phone: '' 
+  })
   
   const searchParams = useSearchParams()
 
@@ -260,6 +275,38 @@ function DashboardContent() {
     setMenuItems(menuItems.map(item => 
       item.id === id ? { ...item, available: !item.available } : item
     ))
+  }
+
+  const handleAddShift = () => {
+    if (newShift.employee && newShift.date && newShift.startTime && newShift.endTime) {
+      setShifts([...shifts, {
+        id: shifts.length + 1,
+        employee: newShift.employee,
+        role: newShift.role,
+        date: newShift.date,
+        startTime: newShift.startTime,
+        endTime: newShift.endTime,
+        status: 'pending'
+      }])
+      setNewShift({ employee: '', role: 'Server', date: '', startTime: '', endTime: '' })
+      setShowAddShiftModal(false)
+    }
+  }
+
+  const handleAddMember = () => {
+    if (newMember.name && newMember.email && newMember.phone) {
+      setTeamMembers([...teamMembers, {
+        id: teamMembers.length + 1,
+        name: newMember.name,
+        email: newMember.email,
+        role: newMember.role,
+        status: 'Active',
+        joinDate: new Date().toLocaleDateString(),
+        phone: newMember.phone
+      }])
+      setNewMember({ name: '', email: '', role: 'Server', phone: '' })
+      setShowAddMemberModal(false)
+    }
   }
 
   const getStatusColor = (status: string) => {
@@ -571,7 +618,10 @@ function DashboardContent() {
                 {isManager ? 'Staff Schedule' : 'My Schedule'}
               </h2>
               {isManager && (
-                <button className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 flex items-center">
+                <button 
+                  onClick={() => setShowAddShiftModal(true)}
+                  className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 flex items-center"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Shift
                 </button>
@@ -617,7 +667,10 @@ function DashboardContent() {
                 {isManager ? 'Team Management' : 'Team Members'}
               </h2>
               {isManager && (
-                <button className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 flex items-center">
+                <button 
+                  onClick={() => setShowAddMemberModal(true)}
+                  className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 flex items-center"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Member
                 </button>
@@ -671,24 +724,28 @@ function DashboardContent() {
             {/* Revenue Chart */}
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue Trend (Last 30 Days)</h3>
-              <div className="h-64 flex items-end space-x-2">
-                {analytics.map((day, i) => (
-                  <div key={i} className="flex-1 bg-primary-200 rounded-t" style={{ height: `${(day.revenue / 2800) * 100}%` }}>
-                    <div className="text-xs text-center mt-2 text-gray-600">${day.revenue}</div>
-                  </div>
-                ))}
+              <div className="h-64 overflow-x-auto">
+                <div className="flex items-end space-x-2 min-w-max">
+                  {analytics.map((day, i) => (
+                    <div key={i} className="flex-1 bg-primary-200 rounded-t min-w-[20px]" style={{ height: `${(day.revenue / 2800) * 100}%` }}>
+                      <div className="text-xs text-center mt-2 text-gray-600">${day.revenue}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Orders Chart */}
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Orders Trend (Last 30 Days)</h3>
-              <div className="h-64 flex items-end space-x-2">
-                {analytics.map((day, i) => (
-                  <div key={i} className="flex-1 bg-green-200 rounded-t" style={{ height: `${(day.orders / 70) * 100}%` }}>
-                    <div className="text-xs text-center mt-2 text-gray-600">{day.orders}</div>
-                  </div>
-                ))}
+              <div className="h-64 overflow-x-auto">
+                <div className="flex items-end space-x-2 min-w-max">
+                  {analytics.map((day, i) => (
+                    <div key={i} className="flex-1 bg-green-200 rounded-t min-w-[20px]" style={{ height: `${(day.orders / 70) * 100}%` }}>
+                      <div className="text-xs text-center mt-2 text-gray-600">{day.orders}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -770,6 +827,157 @@ function DashboardContent() {
                   className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700"
                 >
                   Add Item
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Shift Modal */}
+      {showAddShiftModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Shift</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Employee Name</label>
+                  <input
+                    type="text"
+                    value={newShift.employee}
+                    onChange={(e) => setNewShift({...newShift, employee: e.target.value})}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="Enter employee name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Role</label>
+                  <select
+                    value={newShift.role}
+                    onChange={(e) => setNewShift({...newShift, role: e.target.value})}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option>Server</option>
+                    <option>Chef</option>
+                    <option>Host</option>
+                    <option>Bartender</option>
+                    <option>Manager</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Date</label>
+                  <input
+                    type="date"
+                    value={newShift.date}
+                    onChange={(e) => setNewShift({...newShift, date: e.target.value})}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Start Time</label>
+                    <input
+                      type="time"
+                      value={newShift.startTime}
+                      onChange={(e) => setNewShift({...newShift, startTime: e.target.value})}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">End Time</label>
+                    <input
+                      type="time"
+                      value={newShift.endTime}
+                      onChange={(e) => setNewShift({...newShift, endTime: e.target.value})}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={() => setShowAddShiftModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddShift}
+                  className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700"
+                >
+                  Add Shift
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Team Member Modal */}
+      {showAddMemberModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Team Member</h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                  <input
+                    type="text"
+                    value={newMember.name}
+                    onChange={(e) => setNewMember({...newMember, name: e.target.value})}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="Enter full name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Email</label>
+                  <input
+                    type="email"
+                    value={newMember.email}
+                    onChange={(e) => setNewMember({...newMember, email: e.target.value})}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="Enter email address"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Phone</label>
+                  <input
+                    type="tel"
+                    value={newMember.phone}
+                    onChange={(e) => setNewMember({...newMember, phone: e.target.value})}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="Enter phone number"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Role</label>
+                  <select
+                    value={newMember.role}
+                    onChange={(e) => setNewMember({...newMember, role: e.target.value})}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  >
+                    <option>Server</option>
+                    <option>Chef</option>
+                    <option>Host</option>
+                    <option>Bartender</option>
+                    <option>Manager</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={() => setShowAddMemberModal(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddMember}
+                  className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700"
+                >
+                  Add Member
                 </button>
               </div>
             </div>
